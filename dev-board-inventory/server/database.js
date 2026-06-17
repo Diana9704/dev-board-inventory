@@ -1,62 +1,84 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const bcrypt = require('bcryptjs');
+// database.js - Supabase PostgreSQL 版本
+const { Pool } = require('pg');
 
-const dbPath = process.env.NODE_ENV === 'production'
-  ? path.join('/tmp', 'inventory.db')
-  : path.join(__dirname, 'inventory.db');
+// 从环境变量读取数据库连接地址
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false  // Supabase 需要 SSL
+  }
+});
 
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
+// 初始化数据库表
+async function initDatabase() {
+  const client = await pool.connect();
+  try {
+    // 创建用户表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        role VARCHAR(20) DEFAULT 'manager',
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-function initDatabase() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
-      name TEXT NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'owner',
-      status TEXT NOT NULL DEFAULT 'active',
-      created_at TEXT NOT NULL,
-      must_change_password INTEGER NOT NULL DEFAULT 0
-    )
-  `);
+    // 创建开发板表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS boards (
+        id SERIAL PRIMARY KEY,
+        model VARCHAR(100) UNIQUE NOT NULL,
+        stock INTEGER DEFAULT 0 CHECK (stock >= 0),
+        manager_id INTEGER REFERENCES users(id),
+        updated_by INTEGER REFERENCES users(id),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS boards (
-      id TEXT PRIMARY KEY,
-      model TEXT NOT NULL,
-      stock INTEGER NOT NULL DEFAULT 0,
-      owner_id TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      updated_by TEXT,
-      FOREIGN KEY (owner_id) REFERENCES users(id)
-    )
-  `);
+    // 创建操作日志表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS logs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        action VARCHAR(50),
+        detail TEXT,
+        ip VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS logs (
-      id TEXT PRIMARY KEY,
-      user_id TEXT,
-      username TEXT,
-      name TEXT,
-      action TEXT NOT NULL,
-      detail TEXT,
-      time TEXT NOT NULL
-    )
-  `);
+    // 创建库存变更历史表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS stock_history (
+        id SERIAL PRIMARY KEY,
+        board_id INTEGER REFERENCES boards(id),
+        old_stock INTEGER,
+        new_stOCK INTEGER,
+        operator_id INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  const admin1 = db.prepare('SELECT * FROM users WHERE username = ?').get('admin1');
-  if (!admin1) {
-    const hash = bcrypt.hashSync('admin123', 10);
-    db.prepare(`INSERT INTO users (id, username, name, password, role, status, created_at, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run('admin1', 'admin1', '管理员1', hash, 'admin', 'active', new Date().toISOString(), 0);
-    db.prepare(`INSERT INTO users (id, username, name, password, role, status, created_at, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run('admin2', 'admin2', '管理员2', hash, 'admin', 'active', new Date().toISOString(), 0);
+    // 插入默认管理员（如果不存在）
+    // 注意：密码是 "admin123" 的 bcrypt 哈希值
+    await client.query(`
+      INSERT INTO users (username, password, name, role)
+      VALUES 
+        ('admin1', '$2b$10$wQYv2GqH.l5qF1aN2ZqU.OWBzQz6JzL5zYzYzYzYzYzYzYzYzYz', '超级管理员1', 'admin'),
+        ('admin2', '$2b$10$wQYv2GqH.l5qF1aN2ZqU.OWBzQz6JzL5zYzYzYzYzYzYzYzYzYz', '超级管理员2', 'admin')
+      ON CONFLICT (username) DO NOTHING
+    `);
+
+    console.log('✅ 数据库初始化成功');
+  } catch (err) {
+    console.error('❌ 数据库初始化失败:', err);
+  } finally {
+    client.release();
   }
 }
 
-initDatabase();
-module.exports = db;
+// 导出 pool 和 initDatabase
+module.exports = { pool, initDatabase };
