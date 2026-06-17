@@ -1,52 +1,32 @@
 # 开发板库存管理系统
 
-基于 Vue3 + Vite + Node.js + Express + SQLite 的全栈 Web 应用。
+基于 Node.js + Express + PostgreSQL (Supabase) 的全栈 Web 应用。
 
 ## 项目结构
 
 ```
 dev-board-inventory/
-├── client/                 # 前端 Vue3 项目
+├── server/                 # 后端 Express 项目
 │   ├── package.json
-│   ├── vite.config.js
-│   ├── index.html
-│   └── src/
-│       ├── main.js
-│       ├── App.vue
-│       ├── router/
-│       │   └── index.js
-│       ├── stores/
-│       │   └── user.js
-│       ├── api/
-│       │   └── index.js
-│       └── views/
-│           ├── Login.vue
-│           ├── Layout.vue
-│           ├── Dashboard.vue
-│           ├── Inventory.vue
-│           ├── Import.vue
-│           ├── Accounts.vue
-│           ├── Profile.vue
-│           └── Logs.vue
-└── server/                 # 后端 Express 项目
-    ├── package.json
-    ├── .env.example
-    ├── server.js
-    ├── database.js
-    ├── middleware/
-    │   └── auth.js
-    └── routes/
-        ├── auth.js
-        ├── boards.js
-        ├── import.js
-        ├── logs.js
-        └── users.js
+│   ├── .env.example
+│   ├── server.js
+│   ├── database.js
+│   ├── middleware/
+│   │   └── auth.js
+│   └── routes/
+│       ├── auth.js
+│       ├── boards.js
+│       ├── import.js
+│       ├── logs.js
+│       └── users.js
+└── public/                 # 前端静态文件
+    └── index.html
 ```
 
 ## 功能特性
 
-- 访客模式（只读访问，无需登录）
 - 双角色权限：超级管理员 / 板块负责人
+- 访客模式（只读访问，无需登录）
 - 库存 CRUD 管理
 - Excel 批量导入 / 导出
 - 操作日志记录
@@ -54,7 +34,7 @@ dev-board-inventory/
 
 ## 本地开发
 
-### 1. 安装后端依赖
+### 1. 安装依赖
 
 ```bash
 cd server
@@ -65,64 +45,49 @@ npm install
 
 ```bash
 cp .env.example .env
-# 编辑 .env 设置 JWT_SECRET
+```
+
+编辑 `.env` 文件：
+
+```
+DATABASE_URL=postgresql://postgres:你的密码@db.xxxxx.supabase.co:5432/postgres
+JWT_SECRET=my-secret-key-2026
+PORT=3000
 ```
 
 ### 3. 启动后端
 
 ```bash
-npm start
-# 或开发模式
-npm run dev
+node server.js
 ```
 
-### 4. 安装前端依赖
+访问地址：http://localhost:3000
 
-```bash
-cd ../client
-npm install
-```
+## 部署到 Vercel + Supabase
 
-### 5. 启动前端
+### 1. 准备 Supabase 数据库
 
-```bash
-npm run dev
-```
+1. 注册 Supabase 并创建项目
+2. 在 Settings → Database 获取连接字符串
+3. 替换密码后保存为 `DATABASE_URL`
 
-前端地址：http://localhost:5173
-后端地址：http://localhost:3000
+### 2. 部署到 Vercel
 
-## 部署到 Render
-
-### 1. 构建前端
-
-```bash
-cd client
-npm install
-npm run build
-```
-
-### 2. 部署后端
-
-将整个项目推送到 GitHub，然后在 Render 创建 Web Service：
-
-- **Build Command**: `cd server && npm install`
-- **Start Command**: `cd server && npm start`
-- **Root Directory**: `./`
-
-### 3. 设置环境变量
-
-```
-JWT_SECRET=你的强密码密钥
-NODE_ENV=production
-```
+1. 将代码推送到 GitHub
+2. 在 Vercel 导入项目
+3. 添加环境变量：
+   - `DATABASE_URL`：Supabase 连接地址
+   - `JWT_SECRET`：自定义密钥
+4. 点击 Deploy
 
 ## 默认账号
 
-- 管理员1：`admin1` / `admin123`
-- 管理员2：`admin2` / `admin123`
+| 账号 | 密码 | 角色 |
+|------|------|------|
+| admin1 | admin123 | 超级管理员 |
+| admin2 | admin123 | 超级管理员 |
 
-## API 文档
+## API 接口
 
 ### 认证
 | 方法 | 路径 | 说明 |
@@ -134,18 +99,17 @@ NODE_ENV=production
 ### 库存
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /api/boards | 获取列表（支持访客） |
-| GET | /api/boards/stats | 统计数据（支持访客） |
+| GET | /api/boards | 获取列表 |
+| GET | /api/boards/stats | 统计数据 |
 | POST | /api/boards | 新增型号 |
 | PUT | /api/boards/:id | 编辑库存 |
 | DELETE | /api/boards/:id | 删除型号 |
-| GET | /api/boards/export | 导出 Excel（支持访客） |
+| GET | /api/boards/export | 导出 Excel |
 
 ### 账号管理（管理员）
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | /api/users | 用户列表 |
-| GET | /api/users/owners | 负责人下拉选项 |
 | POST | /api/users | 新增负责人 |
 | POST | /api/users/:id/reset-password | 重置密码 |
 | POST | /api/users/:id/toggle-status | 启用/禁用 |
