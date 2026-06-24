@@ -25,27 +25,10 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
-
-  if (to.meta.public) {
-    next()
-    return
-  }
-
-  if (!userStore.token && !userStore.isGuest) {
-    next('/login')
-    return
-  }
-
-  if (to.meta.admin && userStore.role !== 'admin' && !userStore.isGuest) {
-    next('/dashboard')
-    return
-  }
-
-  if (userStore.isGuest && to.meta.admin) {
-    next('/dashboard')
-    return
-  }
-
+  if (to.meta.public) { next(); return }
+  if (!userStore.token && !userStore.isGuest) { next('/login'); return }
+  if (to.meta.admin && userStore.role !== 'admin' && !userStore.isGuest) { next('/dashboard'); return }
+  if (userStore.isGuest && to.meta.admin) { next('/dashboard'); return }
   next()
 })
 

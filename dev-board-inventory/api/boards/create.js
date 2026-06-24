@@ -1,5 +1,5 @@
 import { supabase } from '../_utils/supabase.js'
-import { verifyToken, requireAdmin, generateId, jsonResponse, errorResponse } from '../_utils/helpers.js'
+import { verifyToken, generateId, jsonResponse, errorResponse } from '../_utils/helpers.js'
 
 export async function POST(req) {
   try {

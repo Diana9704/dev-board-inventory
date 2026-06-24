@@ -4,9 +4,7 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "config": { "distDir": "dist" }
     },
     {
       "src": "api/**/*.js",
@@ -19,14 +17,12 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/[^.]+",
-      "dest": "/index.html"
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/index.html"
     }
-  ],
-  "env": {
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SUPABASE_SERVICE_KEY": "@supabase-service-key",
-    "JWT_SECRET": "@jwt-secret"
-  }
+  ]
 }

@@ -11,7 +11,6 @@ export async function DELETE(req) {
     if (!board) {
       return errorResponse('型号不存在', 404)
     }
-
     if (user.role === 'owner' && board.owner_id !== user.id) {
       return errorResponse('无权删除此型号', 403)
     }

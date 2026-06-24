@@ -6,7 +6,6 @@
 
 -- 插入默认超级管理员账号
 -- 密码均为 admin123 的 bcrypt 哈希值
--- 生成方式：在 Node.js 中执行 require('bcryptjs').hashSync('admin123', 10)
 INSERT INTO users (id, username, name, password, role, status, must_change_password)
 VALUES 
   (

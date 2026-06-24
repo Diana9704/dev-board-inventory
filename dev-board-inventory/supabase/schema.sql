@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS users (
   must_change_password BOOLEAN NOT NULL DEFAULT FALSE
 );
 
--- 用户表注释
 COMMENT ON TABLE users IS '用户表';
 COMMENT ON COLUMN users.id IS '用户唯一标识';
 COMMENT ON COLUMN users.username IS '登录账号（小写字母+数字）';
@@ -36,7 +35,6 @@ CREATE TABLE IF NOT EXISTS boards (
   updated_by TEXT
 );
 
--- 开发板表注释
 COMMENT ON TABLE boards IS '开发板库存表';
 COMMENT ON COLUMN boards.id IS '开发板唯一标识';
 COMMENT ON COLUMN boards.model IS '开发板型号名称';
@@ -55,7 +53,6 @@ CREATE TABLE IF NOT EXISTS logs (
   time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 日志表注释
 COMMENT ON TABLE logs IS '操作日志表';
 COMMENT ON COLUMN logs.id IS '日志唯一标识';
 COMMENT ON COLUMN logs.user_id IS '操作用户ID';
@@ -63,7 +60,7 @@ COMMENT ON COLUMN logs.action IS '操作类型（如：新增型号、编辑库�
 COMMENT ON COLUMN logs.detail IS '操作详情描述';
 COMMENT ON COLUMN logs.time IS '操作时间';
 
--- 4. 创建索引（提升查询性能）
+-- 4. 创建索引
 CREATE INDEX IF NOT EXISTS idx_boards_owner_id ON boards(owner_id);
 CREATE INDEX IF NOT EXISTS idx_boards_model ON boards(model);
 CREATE INDEX IF NOT EXISTS idx_boards_updated_at ON boards(updated_at DESC);
@@ -73,14 +70,10 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 
--- 5. 启用行级安全策略（Row Level Security）
+-- 5. 启用行级安全策略
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE boards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE logs ENABLE ROW LEVEL SECURITY;
-
--- 注意：由于后端使用 Service Role Key（绕过 RLS），
--- 以下策略主要用于直接通过 Anon Key 访问时的安全限制。
--- 如果仅通过后端 API 访问，可以不配置这些策略。
 
 -- 6. 完成提示
 DO $$
