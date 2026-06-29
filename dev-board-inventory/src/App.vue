@@ -3,6 +3,9 @@
 </template>
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #f0f2f5; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 </style>
