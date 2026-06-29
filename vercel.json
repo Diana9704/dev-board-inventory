@@ -16,7 +16,8 @@
     { "src": "/api/logs/(.*)", "dest": "/api/logs.js" },
     { "src": "/api/import/(.*)", "dest": "/api/import.js" },
     { "src": "/api/health", "dest": "/api/health.js" },
-    { "src": "/(.*)", "dest": "/dist/$1" },
-    { "src": "/(.*)", "dest": "/dist/index.html" }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
+
