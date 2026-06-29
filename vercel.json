@@ -1,7 +1,14 @@
 {
   "version": 2,
   "builds": [
-    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist",
+        "installCommand": "npm install --include=dev"
+      }
+    },
     { "src": "api/auth.js", "use": "@vercel/node" },
     { "src": "api/boards.js", "use": "@vercel/node" },
     { "src": "api/users.js", "use": "@vercel/node" },
@@ -20,4 +27,3 @@
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
-
