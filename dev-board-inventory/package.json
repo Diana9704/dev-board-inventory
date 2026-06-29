@@ -18,11 +18,9 @@
     "xlsx": "^0.18.5",
     "@supabase/supabase-js": "^2.39.0",
     "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "vite": "^5.2.0"
+    "bcryptjs": "^2.4.3",
+    "vite": "^5.2.0",
+    "@vitejs/plugin-vue": "^5.0.4"
   },
   "engines": {
     "node": ">=18.0.0"
