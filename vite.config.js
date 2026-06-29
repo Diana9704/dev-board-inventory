@@ -1,18 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
-
-// 在 ES Module 中模拟 __dirname
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = resolve(__filename, '..')
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  root: process.cwd(),
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
   server: {
@@ -28,7 +22,9 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
-      input: 'index.html'
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url))
+      }
     }
   }
 })
